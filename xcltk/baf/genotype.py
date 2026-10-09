@@ -219,7 +219,12 @@ def filter_snps(in_dir, out_dir, min_count, min_maf):
     df = df[df["DP"] >= min_count].copy()
     df["BAF"] = df["AD"] / df["DP"]
     df = df[(df["BAF"] >= min_maf) & (df["BAF"] <= 1-min_maf)].copy()
-    
+   
+    # MODIFY #
+    mask = ~df.duplicated(subset=['chrom', 'pos', 'ref', 'alt'], keep='first')
+    df = df[mask.values].copy()
+    ##########
+
     adata = adata[:, df.index].copy()
     n_new, p_new = adata.shape
     
