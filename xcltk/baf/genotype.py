@@ -221,7 +221,16 @@ def filter_snps(in_dir, out_dir, min_count, min_maf):
     df = df[(df["BAF"] >= min_maf) & (df["BAF"] <= 1-min_maf)].copy()
    
     # MODIFY #
-    mask = ~df.duplicated(subset=['chrom', 'pos', 'ref', 'alt'], keep='first')
+    # NOTE: downstream steps match the cellsnp SNP columns with the phased VCF
+    # SNPs by genomic position only (see `fc.main::prepare_config` and
+    # `fc.main::afc_core`), so SNPs must be unique per (chrom, pos). Keeping
+    # multiple records at the same position (e.g. multi-allelic sites) makes
+    # the local-phasing SNP list shorter than the AD/DP matrices and triggers
+    # "operands could not be broadcast together" errors.
+    # For duplicated positions, keep the record with the largest AD/DP (BAF).
+    df = df.sort_values(
+        by = ["chrom", "pos", "BAF"], ascending = [True, True, False])
+    mask = ~df.duplicated(subset=['chrom', 'pos'], keep='first')
     df = df[mask.values].copy()
     ##########
 
