@@ -38,7 +38,7 @@ def load_region_from_txt(fn, sep = "\t", verbose = False):
                 sys.stderr.write("[E::%s] too few columns of line %d.\n" % (func, nl))
             return None           
         chrom, start, end, name = parts[:4]
-        start, end = int(start), int(end)
+        start, end = int(float(start)), int(float(end))
         reg = Region(chrom, start, end + 1, name)
         reg_list.append(reg)
     fp.close()
